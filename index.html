@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Media Entertainment Solution</title>
+<style>
+  :root{
+    --accent:#e60012;     /* LG red */
+    --wa:#25D366;         /* WhatsApp green */
+    --pill:#f2ede6;
+    --shadow: 0 10px 30px rgba(0,0,0,.08);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html, body { height: 100%; }
+  body{
+    background:#fc745e;
+    font-family: "LG EI", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+  }
+
+  .wrapper{
+    position: relative;
+    width: min(100vw, 430px);
+    height: 100dvh;
+    overflow:hidden;
+    top:0;
+  }
+
+  .banner{
+    position:absolute;
+    inset:0;
+    background: url("1.png") no-repeat center top;
+    background-size: cover;
+    z-index:0;
+    top: 0px; 
+  }
+
+  .main{
+    position:absolute;
+    left:50%;
+    transform: translateX(-50%);
+    bottom: max(0px, env(safe-area-inset-bottom));
+    width: min(92%, 420px);
+    height: clamp(562px, 76.5dvh, 740px);
+    background:#fff;
+    border-radius: 150px 150px 0 0;
+    box-shadow: var(--shadow);
+    z-index:1;
+
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding-top: clamp(20px, 5vh, 30px);
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  #staffCard{
+    width:100%;
+    max-width: 400px;
+    padding-top: clamp(30px, 5vh, 40px);
+    bottom: 0;
+    max-height: calc(100% - 2px);
+    overflow:auto;
+    -webkit-overflow-scrolling: touch;
+    text-align: center;
+  }
+
+  h2{
+    font-size: clamp(26px, 4.5vh, 36px);
+    font-weight: 800;
+    letter-spacing: .02em;
+    margin-bottom: .25rem;
+  }
+	
+  h3{
+    font-size: clamp(14px, 3vh, 20px);
+    font-weight: 400;
+    letter-spacing: .02em;
+    margin-bottom: .25rem;
+    color:#FD312E;
+  }
+	
+  .info {
+    padding: 1rem 0 0.5rem 0;
+  }
+  .info p {margin:0; line-height:0.2;}
+  .circle_icon {
+    width: 2rem;
+    padding: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: clamp(14px, 2.5vh, 16px);
+    line-height: 1;
+    color:black;
+    margin: .20rem 0;
+  }
+  
+  .link{
+    padding: 3rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .link p {
+    font-size: clamp(12px, 2.3vh, 14px);
+    font-weight: 800;
+    line-height: 1;
+    color:black;
+    margin: .20rem 0;
+    padding-bottom: 0.5rem;
+  }
+  
+  .imgbtn{
+    appearance:none; border:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    width:min(100%, 300px);
+    height:3rem;
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:contain;  
+    background-color:transparent;
+    font-weight:700;
+    filter: drop-shadow(0rem 0.3125rem 0.375rem rgba(0, 0, 0, 0.161));
+    font-size:13px;  
+  }
+  .imgbtn + .imgbtn { margin-top: 12px; }
+  .imgbtn.brochure{ background-image:url("view_brochure.png"); color:#707070; }
+  .imgbtn.wa{ background-image:url("whatsapp_me.png"); color:#707070; }
+
+  @media (max-height: 640px){
+    .main{ height: clamp(520px, 80dvh, 640px); }
+  }
+</style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="banner"></div>
+    <div class="main">
+      <div id="staffCard">
+        <p>Loading staff details...</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const container = document.getElementById("staffCard");
+  const params = new URLSearchParams(location.search);
+  const staffId = params.get("staffid");
+
+  if (!staffId) {
+    container.innerHTML = `<p>No staff selected.</p>`;
+    return;
+  }
+
+  const ICON_PHONE = "Group 5.png";
+  const ICON_LOC   = "Group 6.png";
+
+  const safe = (v) => (v == null ? "" : String(v));
+
+  fetch("staff.json", { cache: "no-store" })
+    .then((res) => res.json())
+    .then((list) => {
+      const s = list.find((x) => String(x.StaffID) === String(staffId));
+      if (!s) {
+        container.innerHTML = `<p>Staff ID not found.</p>`;
+        return;
+      }
+
+      const name     = s.Name ?? "Staff Member";
+      const fullname = s.FullName ?? name;
+      const whatsapp = (s.WhatsApp ?? "").replace(/\s+/g, "").replace(/[^\d]/g, "");
+	  const whatsappDisplay = (s.WhatsApp ?? "");
+      const channel  = s.Channel ?? "";
+      const outlet   = s.Outlet ?? "";
+	  
+      const waText = `Hi ${name}! I'm interested in learning more about Audio/Visual products.`;
+      const waUrl  = whatsapp ? `https://wa.me/65${whatsapp}?text=${encodeURIComponent(waText)}` : null;
+      
+      container.innerHTML = `
+        <h2>${safe(fullname)}</h2>
+        <h3>Product Specialist</h3>
+
+        <div class="info">
+          <img class="circle_icon" src="${ICON_PHONE}" alt="phone icon">
+          <p>${whatsappDisplay && whatsappDisplay.trim() !== "" ? `<a href="tel:+65${whatsapp}">+65 ${whatsappDisplay}</a>` : "-"}</p>
+        </div>
+
+        <div class="info">
+          <img class="circle_icon" src="${ICON_LOC}" alt="location icon">
+          <p>${safe(channel)}</p> <br> <p>${safe(outlet)}</p>
+        </div>
+
+        <div class="link">
+          <p>Feel free to contact me!</p>
+          <button class="imgbtn wa" onclick="openWhatsApp()">WhatsApp Me</button>
+		  <button class="imgbtn brochure" onclick="window.open('https://mediaentertainmentsolution.github.io/ITBrochure/', '_blank')">View Brochure</button>
+        </div>
+      `;
+      
+      // Create a global function for WhatsApp
+      window.openWhatsApp = function() {
+        if (waUrl) {
+          window.open(waUrl, '_blank');
+        }
+      };
+    })
+    .catch((err) => {
+      console.error("Error loading staff data:", err);
+      container.innerHTML = `<p>Error loading staff.json. Run a local server instead of opening file:// directly.</p>`;
+    });
+})();
+</script>
+</body>
+</html>
